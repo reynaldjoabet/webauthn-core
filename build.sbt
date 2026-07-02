@@ -15,6 +15,8 @@ lazy val root = (project in file("."))
       bouncycastleProvider,
       munit,
       scalacheck,
-      circeCore
+      circeCore,
+      "com.yubico" % "webauthn-server-core" % "2.9.0",
+      "com.yubico" % "webauthn-server-attestation" % "2.9.0"
     )
   )
