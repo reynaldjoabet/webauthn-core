@@ -2,12 +2,12 @@ package webauthn.crypto
 
 import webauthn.domain.CoseAlgorithm
 
-/** Maps registered COSE algorithms to the JCA `Signature` algorithm names used
-  * to verify WebAuthn assertion/attestation signatures.
+/**
+  * Maps registered COSE algorithms to the JCA `Signature` algorithm names used to verify WebAuthn
+  * assertion/attestation signatures.
   *
-  * ECDSA (ES*) signatures arrive ASN.1/DER-encoded, which is what the JCA
-  * `*withECDSA` verifiers expect. EdDSA signatures are raw. RS* are PKCS#1 v1.5
-  * and PS* are RSASSA-PSS.
+  * ECDSA (ES*) signatures arrive ASN.1/DER-encoded, which is what the JCA `*withECDSA` verifiers
+  * expect. EdDSA signatures are raw. RS* are PKCS#1 v1.5 and PS* are RSASSA-PSS.
   */
 object CoseAlgorithms {
 
@@ -26,4 +26,5 @@ object CoseAlgorithms {
       case CoseAlgorithm.PS512  => "SHA512withRSA/PSS"
       case CoseAlgorithm.EdDSA  => "Ed25519"
     }
+
 }

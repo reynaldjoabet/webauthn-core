@@ -1,18 +1,23 @@
 package webauthn.crypto
 
-import webauthn.domain.ChallengeBytes
-
 import java.security.SecureRandom
 
-/** Cryptographically secure challenge generation (WebAuthn §13.4.3 recommends
-  * at least 16 bytes of entropy; 32 is a common default).
+import webauthn.domain.ChallengeBytes
+
+/**
+  * Cryptographically secure challenge generation (WebAuthn §13.4.3 recommends at least 16 bytes of
+  * entropy; 32 is a common default).
   */
 object Challenges {
 
-  /** Minimum challenge length the spec recommends. */
+  /**
+    * Minimum challenge length the spec recommends.
+    */
   val MinLength: Int = 16
 
-  /** Default challenge length used when none is specified. */
+  /**
+    * Default challenge length used when none is specified.
+    */
   val DefaultLength: Int = 32
 
   private val random = new SecureRandom()
@@ -26,4 +31,5 @@ object Challenges {
     random.nextBytes(buffer)
     ChallengeBytes.applyUnsafe(buffer.toVector)
   }
+
 }

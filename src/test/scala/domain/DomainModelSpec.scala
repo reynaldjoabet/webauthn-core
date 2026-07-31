@@ -107,8 +107,8 @@ class DomainModelSpec extends munit.FunSuite {
   }
 
   test("CoseKey.ec2 enforces fixed-width coordinates and rejects Ed25519") {
-    val p256 = CoseEllipticCurve.P256
-    val es256 = CoseAlgorithm.ES256.identifier
+    val p256    = CoseEllipticCurve.P256
+    val es256   = CoseAlgorithm.ES256.identifier
     val coord32 = Vector.fill[Byte](32)(1)
 
     assert(CoseKey.ec2(es256, p256, coord32, coord32).isRight)
@@ -129,4 +129,5 @@ class DomainModelSpec extends munit.FunSuite {
       None
     )
   }
+
 }

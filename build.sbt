@@ -1,7 +1,7 @@
 import Dependencies._
 
-ThisBuild / scalaVersion := "3.3.8"
-ThisBuild / version := "0.1.0-SNAPSHOT"
+ThisBuild / scalaVersion      := "3.3.8"
+ThisBuild / version           := "0.1.0-SNAPSHOT"
 ThisBuild / semanticdbEnabled := true
 
 ThisBuild / scalacOptions := Seq(
@@ -25,7 +25,7 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 
 lazy val root = (project in file("."))
   .settings(
-    name := "webauthn-core",
+    name                 := "webauthn-core",
     libraryDependencies ++= Seq(
       iron,
       ironJsoniter,
@@ -36,7 +36,7 @@ lazy val root = (project in file("."))
       munit,
       scalacheck,
       circeCore,
-      "com.yubico" % "webauthn-server-core" % "2.9.0",
+      "com.yubico" % "webauthn-server-core"        % "2.9.0",
       "com.yubico" % "webauthn-server-attestation" % "2.9.0"
     )
   )

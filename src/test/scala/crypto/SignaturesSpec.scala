@@ -1,19 +1,20 @@
 package webauthn.crypto
 
-import webauthn.domain.*
-
 import java.math.BigInteger
+import java.security.{KeyPairGenerator, Signature}
 import java.security.interfaces.ECPublicKey
 import java.security.spec.ECGenParameterSpec
-import java.security.{KeyPairGenerator, Signature}
+
+import webauthn.domain.*
 
 class SignaturesSpec extends munit.FunSuite {
 
-  /** Left-pads/normalises a BigInteger to an unsigned, fixed-width big-endian
-    * byte vector (how COSE encodes EC coordinates).
+  /**
+    * Left-pads/normalises a BigInteger to an unsigned, fixed-width big-endian byte vector (how COSE
+    * encodes EC coordinates).
     */
   private def fixedWidth(value: BigInteger, length: Int): Vector[Byte] = {
-    val raw = value.toByteArray
+    val raw      = value.toByteArray
     val unsigned =
       if (raw.length == length + 1 && raw(0) == 0) raw.tail
       else raw
@@ -27,7 +28,7 @@ class SignaturesSpec extends munit.FunSuite {
   test("ES256 round-trip verifies and rejects tampered data") {
     val kpg = KeyPairGenerator.getInstance("EC")
     kpg.initialize(new ECGenParameterSpec("secp256r1"))
-    val kp = kpg.generateKeyPair()
+    val kp  = kpg.generateKeyPair()
     val pub = kp.getPublic.asInstanceOf[ECPublicKey]
 
     val cose = CoseKey
@@ -39,7 +40,7 @@ class SignaturesSpec extends munit.FunSuite {
       )
       .fold(fail(_), identity)
 
-    val data = "authenticatorData||clientDataHash".getBytes("UTF-8")
+    val data   = "authenticatorData||clientDataHash".getBytes("UTF-8")
     val signer = Signature.getInstance("SHA256withECDSA")
     signer.initSign(kp.getPrivate)
     signer.update(data)
@@ -57,7 +58,7 @@ class SignaturesSpec extends munit.FunSuite {
   ) {
     val kpg = KeyPairGenerator.getInstance("EC", Providers.bouncyCastle)
     kpg.initialize(new ECGenParameterSpec("secp256k1"))
-    val kp = kpg.generateKeyPair()
+    val kp  = kpg.generateKeyPair()
     val pub = kp.getPublic.asInstanceOf[ECPublicKey]
 
     val cose = CoseKey
@@ -69,7 +70,7 @@ class SignaturesSpec extends munit.FunSuite {
       )
       .fold(fail(_), identity)
 
-    val data = "es256k signed data".getBytes("UTF-8")
+    val data   = "es256k signed data".getBytes("UTF-8")
     val signer =
       Signature.getInstance("SHA256withECDSA", Providers.bouncyCastle)
     signer.initSign(kp.getPrivate)
@@ -84,9 +85,9 @@ class SignaturesSpec extends munit.FunSuite {
   }
 
   test("RS256 and PS256 round-trips verify") {
-    val kp = KeyPairGenerator.getInstance("RSA").generateKeyPair()
-    val pub = kp.getPublic.asInstanceOf[java.security.interfaces.RSAPublicKey]
-    val modulus = pub.getModulus.toByteArray.dropWhile(_ == 0).toVector
+    val kp       = KeyPairGenerator.getInstance("RSA").generateKeyPair()
+    val pub      = kp.getPublic.asInstanceOf[java.security.interfaces.RSAPublicKey]
+    val modulus  = pub.getModulus.toByteArray.dropWhile(_ == 0).toVector
     val exponent = pub.getPublicExponent.toByteArray.toVector
 
     def verifyWith(alg: CoseAlgorithm, jcaName: String): Unit = {
@@ -94,7 +95,7 @@ class SignaturesSpec extends munit.FunSuite {
         .rsa(alg.identifier, modulus, exponent)
         .fold(fail(_), identity)
 
-      val data = s"$alg signed data".getBytes("UTF-8")
+      val data   = s"$alg signed data".getBytes("UTF-8")
       val signer = Signature.getInstance(jcaName)
       if (jcaName == "RSASSA-PSS")
         signer.setParameter(
@@ -130,7 +131,7 @@ class SignaturesSpec extends munit.FunSuite {
       .okpEd25519(CoseAlgorithm.EdDSA.identifier, raw)
       .fold(fail(_), identity)
 
-    val data = "ed25519 signed data".getBytes("UTF-8")
+    val data   = "ed25519 signed data".getBytes("UTF-8")
     val signer = Signature.getInstance("Ed25519")
     signer.initSign(kp.getPrivate)
     signer.update(data)
@@ -138,4 +139,5 @@ class SignaturesSpec extends munit.FunSuite {
 
     assertEquals(Signatures.verify(cose, data, sig), Right(true))
   }
+
 }

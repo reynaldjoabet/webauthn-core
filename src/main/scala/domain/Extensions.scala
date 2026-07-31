@@ -13,8 +13,11 @@ import io.circe.Json
 // plus an `unknown` map so unrecognised extensions round-trip without loss.
 // ---------------------------------------------------------------------------
 
-/** `largeBlob` support level requested at registration. */
+/**
+  * `largeBlob` support level requested at registration.
+  */
 enum LargeBlobSupport derives CanEqual {
+
   case Required
   case Preferred
 
@@ -23,19 +26,23 @@ enum LargeBlobSupport derives CanEqual {
       case Required  => "required"
       case Preferred => "preferred"
     }
+
 }
 
 object LargeBlobSupport {
+
   def fromString(value: String): Option[LargeBlobSupport] =
     value match {
       case "required"  => Some(Required)
       case "preferred" => Some(Preferred)
       case _           => Option.empty
     }
+
 }
 
-/** `largeBlob` inputs. `support` is used at registration; `read`/`write` are
-  * mutually exclusive and used at authentication.
+/**
+  * `largeBlob` inputs. `support` is used at registration; `read`/`write` are mutually exclusive and
+  * used at authentication.
   */
 final case class LargeBlobInputs(
     support: Option[LargeBlobSupport] = None,
@@ -49,16 +56,17 @@ final case class LargeBlobOutputs(
     written: Option[Boolean] = None
 )
 
-/** A pair of PRF evaluation inputs/results; `second` enables the two-input
-  * variant.
+/**
+  * A pair of PRF evaluation inputs/results; `second` enables the two-input variant.
   */
 final case class PrfValues(
     first: NonEmptyBytes,
     second: Option[NonEmptyBytes] = None
 )
 
-/** `prf` inputs. `eval` evaluates against the credential selected by the
-  * ceremony; `evalByCredential` keys evaluations by base64url credential id.
+/**
+  * `prf` inputs. `eval` evaluates against the credential selected by the ceremony;
+  * `evalByCredential` keys evaluations by base64url credential id.
   */
 final case class PrfInputs(
     eval: Option[PrfValues] = None,
@@ -70,14 +78,16 @@ final case class PrfOutputs(
     results: Option[PrfValues] = None
 )
 
-/** `credProps` output (`rk` = whether a discoverable/resident key was made). */
+/**
+  * `credProps` output (`rk` = whether a discoverable/resident key was made).
+  */
 final case class CredentialPropertiesOutput(
     rk: Option[Boolean] = None
 )
 
-/** Client extension inputs (§9.1 client extension processing). Members are
-  * populated per ceremony type; e.g. `credProps`/`appidExclude` at
-  * registration, `appid` at authentication.
+/**
+  * Client extension inputs (§9.1 client extension processing). Members are populated per ceremony
+  * type; e.g. `credProps`/`appidExclude` at registration, `appid` at authentication.
   */
 final case class ClientExtensionInputs(
     appid: Option[String] = None,
@@ -87,16 +97,20 @@ final case class ClientExtensionInputs(
     prf: Option[PrfInputs] = None,
     unknown: Map[String, Json] = Map.empty
 ) {
+
   def isEmpty: Boolean =
     appid.isEmpty && appidExclude.isEmpty && credProps.isEmpty &&
       largeBlob.isEmpty && prf.isEmpty && unknown.isEmpty
+
 }
 
 object ClientExtensionInputs {
   val empty: ClientExtensionInputs = ClientExtensionInputs()
 }
 
-/** Client extension outputs from `getClientExtensionResults()`. */
+/**
+  * Client extension outputs from `getClientExtensionResults()`.
+  */
 final case class ClientExtensionOutputs(
     appid: Option[Boolean] = None,
     appidExclude: Option[Boolean] = None,
@@ -110,10 +124,12 @@ object ClientExtensionOutputs {
   val empty: ClientExtensionOutputs = ClientExtensionOutputs()
 }
 
-/** CBOR `credProtect` policy, surfaced in authenticator extension outputs.
-  * Carried on the wire as a CTAP2 uint (0x01–0x03).
+/**
+  * CBOR `credProtect` policy, surfaced in authenticator extension outputs. Carried on the wire as a
+  * CTAP2 uint (0x01–0x03).
   */
 enum CredentialProtectionPolicy derives CanEqual {
+
   case UserVerificationOptional
   case UserVerificationOptionalWithCredentialIdList
   case UserVerificationRequired
@@ -124,9 +140,11 @@ enum CredentialProtectionPolicy derives CanEqual {
       case UserVerificationOptionalWithCredentialIdList => 2
       case UserVerificationRequired                     => 3
     }
+
 }
 
 object CredentialProtectionPolicy {
+
   def fromLabel(label: Int): Option[CredentialProtectionPolicy] =
     label match {
       case 1 => Some(UserVerificationOptional)
@@ -134,11 +152,12 @@ object CredentialProtectionPolicy {
       case 3 => Some(UserVerificationRequired)
       case _ => None
     }
+
 }
 
-/** Authenticator extension outputs carried in authenticator data (§9.2), e.g.
-  * `credProtect`, `hmac-secret`, `uvm`. Unknown entries retain raw
-  * CBOR-as-JSON.
+/**
+  * Authenticator extension outputs carried in authenticator data (§9.2), e.g. `credProtect`,
+  * `hmac-secret`, `uvm`. Unknown entries retain raw CBOR-as-JSON.
   */
 final case class AuthenticatorExtensionOutputs(
     credProtect: Option[CredentialProtectionPolicy] = None,

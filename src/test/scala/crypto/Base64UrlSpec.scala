@@ -3,7 +3,7 @@ package webauthn.crypto
 class Base64UrlSpec extends munit.FunSuite {
 
   test("encode/decode round-trips arbitrary bytes") {
-    val bytes = Vector[Byte](0, 1, 127, -128, -1, 62, 63)
+    val bytes   = Vector[Byte](0, 1, 127, -128, -1, 62, 63)
     val encoded = Base64Url.encode(bytes)
     assertEquals(Base64Url.decode(encoded.value), Right(bytes))
   }
@@ -25,4 +25,5 @@ class Base64UrlSpec extends munit.FunSuite {
   test("decode accepts the empty string as zero bytes") {
     assertEquals(Base64Url.decode(""), Right(Vector.empty[Byte]))
   }
+
 }

@@ -1,7 +1,5 @@
 package webauthn.crypto
 
-import webauthn.domain.*
-
 import java.math.BigInteger
 import java.security.{AlgorithmParameters, KeyFactory, PublicKey}
 import java.security.spec.{
@@ -12,15 +10,17 @@ import java.security.spec.{
   RSAPublicKeySpec,
   X509EncodedKeySpec
 }
+
 import scala.util.Try
 
+import webauthn.domain.*
 import org.bouncycastle.asn1.edec.EdECObjectIdentifiers
 import org.bouncycastle.asn1.x509.{AlgorithmIdentifier, SubjectPublicKeyInfo}
 
-/** Materialises a parsed [[CoseKey]] into a JCA [[java.security.PublicKey]] so
-  * the signature verifier can use it. NIST curves and RSA use the platform
-  * providers; Ed25519 (raw 32-byte key) and secp256k1 (absent from SunEC since
-  * JDK 16) are built via BouncyCastle.
+/**
+  * Materialises a parsed [[CoseKey]] into a JCA [[java.security.PublicKey]] so the signature
+  * verifier can use it. NIST curves and RSA use the platform providers; Ed25519 (raw 32-byte key)
+  * and secp256k1 (absent from SunEC since JDK 16) are built via BouncyCastle.
   */
 object PublicKeys {
 
@@ -51,19 +51,19 @@ object PublicKeys {
     for {
       std <- ecStdName(curve)
       key <- Try {
-        val useBc = curve == CoseEllipticCurve.Secp256k1
-        val params =
-          if (useBc)
-            AlgorithmParameters.getInstance("EC", Providers.bouncyCastle)
-          else AlgorithmParameters.getInstance("EC")
-        params.init(new ECGenParameterSpec(std))
-        val spec = params.getParameterSpec(classOf[ECParameterSpec])
-        val point = new ECPoint(new BigInteger(1, x), new BigInteger(1, y))
-        val factory =
-          if (useBc) KeyFactory.getInstance("EC", Providers.bouncyCastle)
-          else KeyFactory.getInstance("EC")
-        factory.generatePublic(new ECPublicKeySpec(point, spec))
-      }.toEither.left.map(t => s"Invalid EC public key: ${t.getMessage}")
+               val useBc  = curve == CoseEllipticCurve.Secp256k1
+               val params =
+                 if (useBc)
+                   AlgorithmParameters.getInstance("EC", Providers.bouncyCastle)
+                 else AlgorithmParameters.getInstance("EC")
+               params.init(new ECGenParameterSpec(std))
+               val spec    = params.getParameterSpec(classOf[ECParameterSpec])
+               val point   = new ECPoint(new BigInteger(1, x), new BigInteger(1, y))
+               val factory =
+                 if (useBc) KeyFactory.getInstance("EC", Providers.bouncyCastle)
+                 else KeyFactory.getInstance("EC")
+               factory.generatePublic(new ECPublicKeySpec(point, spec))
+             }.toEither.left.map(t => s"Invalid EC public key: ${t.getMessage}")
     } yield key
 
   private def rsa(
@@ -87,7 +87,7 @@ object PublicKeys {
       case CoseEllipticCurve.Ed25519 =>
         Try {
           val algId = new AlgorithmIdentifier(EdECObjectIdentifiers.id_Ed25519)
-          val spki = new SubjectPublicKeyInfo(algId, x)
+          val spki  = new SubjectPublicKeyInfo(algId, x)
           KeyFactory
             .getInstance("Ed25519", Providers.bouncyCastle)
             .generatePublic(new X509EncodedKeySpec(spki.getEncoded))
@@ -95,4 +95,5 @@ object PublicKeys {
       case other =>
         Left(s"Unsupported OKP curve: $other")
     }
+
 }

@@ -9,8 +9,11 @@ package webauthn.domain
 // key material, not just hold the opaque bytes — these types model that.
 // ---------------------------------------------------------------------------
 
-/** COSE key type, the CBOR `kty` label (RFC 9053 §7). */
+/**
+  * COSE key type, the CBOR `kty` label (RFC 9053 §7).
+  */
 enum CoseKeyType derives CanEqual {
+
   case Okp // 1 — Octet Key Pair (Ed25519, etc.)
   case Ec2 // 2 — Double-coordinate elliptic curve
   case Rsa // 3 — RSA
@@ -21,9 +24,11 @@ enum CoseKeyType derives CanEqual {
       case Ec2 => 2
       case Rsa => 3
     }
+
 }
 
 object CoseKeyType {
+
   def fromLabel(label: Int): Option[CoseKeyType] =
     label match {
       case 1 => Some(Okp)
@@ -31,14 +36,18 @@ object CoseKeyType {
       case 3 => Some(Rsa)
       case _ => None
     }
+
 }
 
-/** COSE elliptic curve, the CBOR `crv` label (IANA COSE Elliptic Curves). */
+/**
+  * COSE elliptic curve, the CBOR `crv` label (IANA COSE Elliptic Curves).
+  */
 enum CoseEllipticCurve derives CanEqual {
-  case P256 // 1  — NIST P-256 (secp256r1)
-  case P384 // 2  — NIST P-384 (secp384r1)
-  case P521 // 3  — NIST P-521 (secp521r1)
-  case Ed25519 // 6  — Ed25519 for use with EdDSA
+
+  case P256      // 1  — NIST P-256 (secp256r1)
+  case P384      // 2  — NIST P-384 (secp384r1)
+  case P521      // 3  — NIST P-521 (secp521r1)
+  case Ed25519   // 6  — Ed25519 for use with EdDSA
   case Secp256k1 // 8  — secp256k1
 
   def label: Int =
@@ -49,9 +58,11 @@ enum CoseEllipticCurve derives CanEqual {
       case Ed25519   => 6
       case Secp256k1 => 8
     }
+
 }
 
 object CoseEllipticCurve {
+
   def fromLabel(label: Int): Option[CoseEllipticCurve] =
     label match {
       case 1 => Some(P256)
@@ -61,16 +72,18 @@ object CoseEllipticCurve {
       case 8 => Some(Secp256k1)
       case _ => None
     }
+
 }
 
-/** Registered COSE algorithms relevant to WebAuthn (IANA COSE Algorithms).
+/**
+  * Registered COSE algorithms relevant to WebAuthn (IANA COSE Algorithms).
   *
-  * This is the closed set of algorithms a relying party can actually verify.
-  * The wire value remains a raw [[CoseAlgorithmIdentifier]] so unknown
-  * algorithms round-trip without loss; map to this enum when dispatching
-  * verification logic.
+  * This is the closed set of algorithms a relying party can actually verify. The wire value remains
+  * a raw [[CoseAlgorithmIdentifier]] so unknown algorithms round-trip without loss; map to this
+  * enum when dispatching verification logic.
   */
 enum CoseAlgorithm derives CanEqual {
+
   case EdDSA
   case ES256, ES384, ES512, ES256K
   case RS256, RS384, RS512
@@ -95,27 +108,31 @@ enum CoseAlgorithm derives CanEqual {
 
   def keyType: CoseKeyType =
     this match {
-      case EdDSA                          => CoseKeyType.Okp
-      case ES256 | ES384 | ES512 | ES256K => CoseKeyType.Ec2
+      case EdDSA                                               => CoseKeyType.Okp
+      case ES256 | ES384 | ES512 | ES256K                      => CoseKeyType.Ec2
       case RS256 | RS384 | RS512 | PS256 | PS384 | PS512 | RS1 =>
         CoseKeyType.Rsa
     }
+
 }
 
 object CoseAlgorithm {
+
   def fromIdentifier(id: CoseAlgorithmIdentifier): Option[CoseAlgorithm] =
     values.find(_.identifier == id)
+
 }
 
-/** A parsed COSE public key (RFC 9053). Carries the structured key material a
-  * relying party needs to verify a signature, alongside the algorithm the
-  * authenticator declared for it. The raw CBOR encoding is retained separately
-  * in [[AttestedCredentialData]] for storage / re-verification.
+/**
+  * A parsed COSE public key (RFC 9053). Carries the structured key material a relying party needs
+  * to verify a signature, alongside the algorithm the authenticator declared for it. The raw CBOR
+  * encoding is retained separately in [[AttestedCredentialData]] for storage / re-verification.
   */
 enum CoseKey {
 
-  /** Double-coordinate EC key (kty = EC2). `x`/`y` are the uncompressed,
-    * unsigned, fixed-width coordinates per the curve.
+  /**
+    * Double-coordinate EC key (kty = EC2). `x`/`y` are the uncompressed, unsigned, fixed-width
+    * coordinates per the curve.
     */
   case Ec2(
       alg: CoseAlgorithmIdentifier,
@@ -124,15 +141,17 @@ enum CoseKey {
       y: NonEmptyBytes
   )
 
-  /** Octet key pair (kty = OKP), e.g. Ed25519. `x` is the public key. */
+  /**
+    * Octet key pair (kty = OKP), e.g. Ed25519. `x` is the public key.
+    */
   case Okp(
       alg: CoseAlgorithmIdentifier,
       curve: CoseEllipticCurve,
       x: NonEmptyBytes
   )
 
-  /** RSA key (kty = RSA). `modulus` (n) and `exponent` (e) are big-endian,
-    * unsigned.
+  /**
+    * RSA key (kty = RSA). `modulus` (n) and `exponent` (e) are big-endian, unsigned.
     */
   case Rsa(
       alg: CoseAlgorithmIdentifier,
@@ -140,8 +159,8 @@ enum CoseKey {
       exponent: NonEmptyBytes
   )
 
-  /** The algorithm the authenticator bound to this key (the COSE `alg`),
-    * regardless of key type.
+  /**
+    * The algorithm the authenticator bound to this key (the COSE `alg`), regardless of key type.
     */
   def algorithm: CoseAlgorithmIdentifier =
     this match {
@@ -156,11 +175,14 @@ enum CoseKey {
       case _: Okp => CoseKeyType.Okp
       case _: Rsa => CoseKeyType.Rsa
     }
+
 }
 
 object CoseKey {
 
-  /** Size, in bytes, of a single field element / coordinate for a curve. */
+  /**
+    * Size, in bytes, of a single field element / coordinate for a curve.
+    */
   def coordinateSize(curve: CoseEllipticCurve): Int =
     curve match {
       case CoseEllipticCurve.P256 | CoseEllipticCurve.Secp256k1 => 32
@@ -169,8 +191,9 @@ object CoseKey {
       case CoseEllipticCurve.Ed25519                            => 32
     }
 
-  /** Build an EC2 key, validating that each coordinate is non-empty and the
-    * exact fixed width the curve requires.
+  /**
+    * Build an EC2 key, validating that each coordinate is non-empty and the exact fixed width the
+    * curve requires.
     */
   def ec2(
       alg: CoseAlgorithmIdentifier,
@@ -182,23 +205,27 @@ object CoseKey {
       Left("Ed25519 is not a valid EC2 curve")
     else
       for {
-        _ <- checkSize("EC2 x", curve, x)
-        _ <- checkSize("EC2 y", curve, y)
+        _  <- checkSize("EC2 x", curve, x)
+        _  <- checkSize("EC2 y", curve, y)
         rx <- NonEmptyBytes.either(x)
         ry <- NonEmptyBytes.either(y)
       } yield Ec2(alg, curve, rx, ry)
 
-  /** Build an Ed25519 OKP key, validating the 32-byte public key. */
+  /**
+    * Build an Ed25519 OKP key, validating the 32-byte public key.
+    */
   def okpEd25519(
       alg: CoseAlgorithmIdentifier,
       x: Vector[Byte]
   ): Either[String, CoseKey] =
     for {
-      _ <- checkSize("OKP x", CoseEllipticCurve.Ed25519, x)
+      _  <- checkSize("OKP x", CoseEllipticCurve.Ed25519, x)
       rx <- NonEmptyBytes.either(x)
     } yield Okp(alg, CoseEllipticCurve.Ed25519, rx)
 
-  /** Build an RSA key from big-endian, unsigned modulus and exponent. */
+  /**
+    * Build an RSA key from big-endian, unsigned modulus and exponent.
+    */
   def rsa(
       alg: CoseAlgorithmIdentifier,
       modulus: Vector[Byte],
@@ -218,4 +245,5 @@ object CoseKey {
     if (bytes.length == expected) Right(())
     else Left(s"$label must be $expected bytes for $curve, got ${bytes.length}")
   }
+
 }

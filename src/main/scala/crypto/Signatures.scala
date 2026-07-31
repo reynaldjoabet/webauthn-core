@@ -1,18 +1,20 @@
 package webauthn.crypto
 
-import webauthn.domain.*
-
-import java.security.spec.{MGF1ParameterSpec, PSSParameterSpec}
 import java.security.{Signature => JcaSignature}
+import java.security.spec.{MGF1ParameterSpec, PSSParameterSpec}
+
 import scala.util.Try
 
-/** Verifies WebAuthn signatures (§7.2 step 20, §7.1 step 21) against a parsed
-  * COSE credential public key.
+import webauthn.domain.*
+
+/**
+  * Verifies WebAuthn signatures (§7.2 step 20, §7.1 step 21) against a parsed COSE credential
+  * public key.
   *
-  * `signedData` is the bytes the authenticator signed — for an assertion this
-  * is `authenticatorData || SHA-256(clientDataJSON)`; for packed attestation it
-  * is `authenticatorData || clientDataHash`. The caller assembles it; this
-  * helper only performs the cryptographic check.
+  * `signedData` is the bytes the authenticator signed — for an assertion this is
+  * `authenticatorData || SHA-256(clientDataJSON)`; for packed attestation it is
+  * `authenticatorData || clientDataHash`. The caller assembles it; this helper only performs the
+  * cryptographic check.
   */
 object Signatures {
 
@@ -23,21 +25,21 @@ object Signatures {
   ): Either[String, Boolean] =
     for {
       alg <- CoseAlgorithm
-        .fromIdentifier(key.algorithm)
-        .toRight(s"Unsupported COSE algorithm: ${key.algorithm}")
+               .fromIdentifier(key.algorithm)
+               .toRight(s"Unsupported COSE algorithm: ${key.algorithm}")
       pub <- PublicKeys.toJava(key)
-      ok <- Try {
-        val sig = instance(alg)
-        sig.initVerify(pub)
-        sig.update(signedData)
-        sig.verify(signature)
-      }.toEither.left.map(t => s"Signature verification error: ${t.getMessage}")
+      ok  <- Try {
+              val sig = instance(alg)
+              sig.initVerify(pub)
+              sig.update(signedData)
+              sig.verify(signature)
+            }.toEither.left.map(t => s"Signature verification error: ${t.getMessage}")
     } yield ok
 
-  /** Build and parameterise the JCA verifier for an algorithm. EdDSA and ES256K
-    * run on BouncyCastle (matching the keys built by [[PublicKeys]]; SunEC has
-    * no secp256k1 since JDK 16); RSASSA-PSS is configured with MGF1 and a salt
-    * length equal to the digest length.
+  /**
+    * Build and parameterise the JCA verifier for an algorithm. EdDSA and ES256K run on BouncyCastle
+    * (matching the keys built by [[PublicKeys]]; SunEC has no secp256k1 since JDK 16); RSASSA-PSS
+    * is configured with MGF1 and a salt length equal to the digest length.
     */
   private def instance(alg: CoseAlgorithm): JcaSignature =
     alg match {
@@ -68,4 +70,5 @@ object Signatures {
     )
     sig
   }
+
 }

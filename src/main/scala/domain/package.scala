@@ -1,13 +1,14 @@
 package webauthn.domain
 
+import java.time.Instant
+import java.util.UUID
+
+import io.circe.Json
 import io.github.iltotore.iron.*
 import io.github.iltotore.iron.constraint.any.*
 import io.github.iltotore.iron.constraint.collection.*
 import io.github.iltotore.iron.constraint.numeric.*
 import io.github.iltotore.iron.constraint.string.*
-import io.circe.Json
-import java.time.Instant
-import java.util.UUID
 
 // ---------------------------------------------------------------------------
 // Generic refined primitives
@@ -20,8 +21,7 @@ type Base64UrlNoPadding = Base64UrlNoPadding.T
 object Base64UrlNoPadding extends RefinedType[String, Match["^[A-Za-z0-9_-]*$"]]
 
 type NonEmptyBase64UrlNoPadding = NonEmptyBase64UrlNoPadding.T
-object NonEmptyBase64UrlNoPadding
-    extends RefinedType[String, Match["^[A-Za-z0-9_-]+$"]]
+object NonEmptyBase64UrlNoPadding extends RefinedType[String, Match["^[A-Za-z0-9_-]+$"]]
 
 type NonEmptyBytes = NonEmptyBytes.T
 object NonEmptyBytes extends RefinedType[Vector[Byte], MinLength[1]]
@@ -30,12 +30,10 @@ type ChallengeBytes = ChallengeBytes.T
 object ChallengeBytes extends RefinedType[Vector[Byte], MinLength[16]]
 
 type UserHandle = UserHandle.T
-object UserHandle
-    extends RefinedType[Vector[Byte], MinLength[1] & MaxLength[64]]
+object UserHandle extends RefinedType[Vector[Byte], MinLength[1] & MaxLength[64]]
 
 type CredentialId = CredentialId.T
-object CredentialId
-    extends RefinedType[Vector[Byte], MinLength[1] & MaxLength[1023]]
+object CredentialId extends RefinedType[Vector[Byte], MinLength[1] & MaxLength[1023]]
 
 type Aaguid = Aaguid.T
 object Aaguid extends RefinedType[Vector[Byte], FixedLength[16]]
@@ -43,7 +41,9 @@ object Aaguid extends RefinedType[Vector[Byte], FixedLength[16]]
 type RpIdHash = RpIdHash.T
 object RpIdHash extends RefinedType[Vector[Byte], FixedLength[32]]
 
-/** Signature counter, a 32-bit unsigned integer (§6.1.1). */
+/**
+  * Signature counter, a 32-bit unsigned integer (§6.1.1).
+  */
 type SignCount = SignCount.T
 object SignCount extends RefinedType[Long, Interval.Closed[0L, 4294967295L]]
 
@@ -52,9 +52,11 @@ object TimeoutMillis extends RefinedType[Long, Positive]
 
 type CoseAlgorithmIdentifier = CoseAlgorithmIdentifier.T
 object CoseAlgorithmIdentifier extends RefinedType[Int, Pure] {
+
   val EdDSA: CoseAlgorithmIdentifier = applyUnsafe(-8)
   val ES256: CoseAlgorithmIdentifier = applyUnsafe(-7)
   val RS256: CoseAlgorithmIdentifier = applyUnsafe(-257)
+
 }
 
 // ---------------------------------------------------------------------------
@@ -63,10 +65,11 @@ object CoseAlgorithmIdentifier extends RefinedType[Int, Pure] {
 
 type RelyingPartyId = RelyingPartyId.T
 
-/** WebAuthn RP ID.
+/**
+  * WebAuthn RP ID.
   *
-  * Do not over-validate this with a regex. Actual RP ID validity depends on
-  * origin, effective domain, registrable domain suffix, and browser rules.
+  * Do not over-validate this with a regex. Actual RP ID validity depends on origin, effective
+  * domain, registrable domain suffix, and browser rules.
   */
 object RelyingPartyId extends RefinedType[String, Not[Blank]]
 
@@ -82,8 +85,9 @@ object UserAccountId extends RefinedType[UUID, Pure]
 type UserName = UserName.T
 object UserName extends RefinedType[String, Not[Blank]]
 
-/** Human-displayable name. WebAuthn allows an empty displayName if no suitable
-  * human-palatable name is available, so keep this as String.
+/**
+  * Human-displayable name. WebAuthn allows an empty displayName if no suitable human-palatable name
+  * is available, so keep this as String.
   */
 type UserDisplayName = String
 
@@ -105,23 +109,28 @@ final case class WebAuthnUser(
 // ---------------------------------------------------------------------------
 
 enum PublicKeyCredentialType derives CanEqual {
+
   case PublicKey
 
   override def toString: String =
     this match {
       case PublicKey => "public-key"
     }
+
 }
 
 object PublicKeyCredentialType {
+
   def fromString(value: String): Option[PublicKeyCredentialType] =
     value match {
       case "public-key" => Some(PublicKey)
       case _            => Option.empty
     }
+
 }
 
 enum ClientDataType derives CanEqual {
+
   case Create
   case Get
 
@@ -130,23 +139,27 @@ enum ClientDataType derives CanEqual {
       case Create => "webauthn.create"
       case Get    => "webauthn.get"
     }
+
 }
 
 object ClientDataType {
+
   def fromString(value: String): Option[ClientDataType] =
     value match {
       case "webauthn.create" => Some(Create)
       case "webauthn.get"    => Some(Get)
       case _                 => Option.empty
     }
+
 }
 
 enum AuthenticatorTransport derives CanEqual {
+
   case Usb
   case Nfc
   case Ble
   case SmartCard // WebAuthn L3
-  case Hybrid // WebAuthn L3 (replaced L1 "cable")
+  case Hybrid    // WebAuthn L3 (replaced L1 "cable")
   case Internal
   case Unknown(value: String)
 
@@ -160,12 +173,14 @@ enum AuthenticatorTransport derives CanEqual {
       case Internal       => "internal"
       case Unknown(value) => value.toLowerCase()
     }
+
 }
 
 object AuthenticatorTransport {
 
-  /** Total: WebAuthn asks clients and RPs to tolerate transports minted after
-    * they shipped, so unrecognised values are retained, not rejected.
+  /**
+    * Total: WebAuthn asks clients and RPs to tolerate transports minted after they shipped, so
+    * unrecognised values are retained, not rejected.
     */
   def fromString(value: String): AuthenticatorTransport =
     value match {
@@ -177,9 +192,11 @@ object AuthenticatorTransport {
       case "internal"   => Internal
       case other        => Unknown(other)
     }
+
 }
 
 enum AuthenticatorAttachment derives CanEqual {
+
   case Platform
   case CrossPlatform
 
@@ -188,18 +205,22 @@ enum AuthenticatorAttachment derives CanEqual {
       case Platform      => "platform"
       case CrossPlatform => "cross-platform"
     }
+
 }
 
 object AuthenticatorAttachment {
+
   def fromString(value: String): Option[AuthenticatorAttachment] =
     value match {
       case "platform"       => Some(Platform)
       case "cross-platform" => Some(CrossPlatform)
       case _                => Option.empty
     }
+
 }
 
 enum ResidentKeyRequirement derives CanEqual {
+
   case Discouraged
   case Preferred
   case Required
@@ -210,9 +231,11 @@ enum ResidentKeyRequirement derives CanEqual {
       case Preferred   => "preferred"
       case Required    => "required"
     }
+
 }
 
 object ResidentKeyRequirement {
+
   def fromString(value: String): Option[ResidentKeyRequirement] =
     value match {
       case "discouraged" => Some(Discouraged)
@@ -220,9 +243,11 @@ object ResidentKeyRequirement {
       case "required"    => Some(Required)
       case _             => Option.empty
     }
+
 }
 
 enum UserVerificationRequirement derives CanEqual {
+
   case Required
   case Preferred
   case Discouraged
@@ -233,9 +258,11 @@ enum UserVerificationRequirement derives CanEqual {
       case Preferred   => "preferred"
       case Discouraged => "discouraged"
     }
+
 }
 
 object UserVerificationRequirement {
+
   def fromString(value: String): Option[UserVerificationRequirement] =
     value match {
       case "required"    => Some(Required)
@@ -243,9 +270,11 @@ object UserVerificationRequirement {
       case "discouraged" => Some(Discouraged)
       case _             => Option.empty
     }
+
 }
 
 enum AttestationConveyancePreference derives CanEqual {
+
   case None
   case Indirect
   case Direct
@@ -258,9 +287,11 @@ enum AttestationConveyancePreference derives CanEqual {
       case Direct     => "direct"
       case Enterprise => "enterprise"
     }
+
 }
 
 object AttestationConveyancePreference {
+
   def fromString(value: String): Option[AttestationConveyancePreference] =
     value match {
       case "none"       => Some(AttestationConveyancePreference.None)
@@ -269,9 +300,11 @@ object AttestationConveyancePreference {
       case "enterprise" => Some(Enterprise)
       case _            => Option.empty
     }
+
 }
 
 enum PublicKeyCredentialHint derives CanEqual {
+
   case SecurityKey
   case ClientDevice
   case Hybrid
@@ -284,11 +317,14 @@ enum PublicKeyCredentialHint derives CanEqual {
       case Hybrid         => "hybrid"
       case Unknown(value) => value.toLowerCase()
     }
+
 }
 
 object PublicKeyCredentialHint {
 
-  /** Total: hints are advisory, so unrecognised values are retained. */
+  /**
+    * Total: hints are advisory, so unrecognised values are retained.
+    */
   def fromString(value: String): PublicKeyCredentialHint =
     value match {
       case "security-key"  => SecurityKey
@@ -296,9 +332,11 @@ object PublicKeyCredentialHint {
       case "hybrid"        => Hybrid
       case other           => Unknown(other)
     }
+
 }
 
 enum AttestationStatementFormat derives CanEqual {
+
   case None
   case Packed
   case Tpm
@@ -321,13 +359,15 @@ enum AttestationStatementFormat derives CanEqual {
       case Compound         => "compound"
       case Unknown(value)   => value.toLowerCase()
     }
+
 }
 
 object AttestationStatementFormat {
 
-  /** Total: an attestation object may carry a format this library does not
-    * model; it is retained as [[Unknown]] and dispatched to
-    * [[AttestationStatement.Unrecognized]] rather than rejected at parse time.
+  /**
+    * Total: an attestation object may carry a format this library does not model; it is retained as
+    * [[Unknown]] and dispatched to [[AttestationStatement.Unrecognized]] rather than rejected at
+    * parse time.
     */
   def fromString(value: String): AttestationStatementFormat =
     value match {
@@ -341,9 +381,11 @@ object AttestationStatementFormat {
       case "compound"          => Compound
       case other               => Unknown(other)
     }
+
 }
 
 enum TokenBindingStatus derives CanEqual {
+
   case Present
   case Supported
 
@@ -352,15 +394,18 @@ enum TokenBindingStatus derives CanEqual {
       case Present   => "present"
       case Supported => "supported"
     }
+
 }
 
 object TokenBindingStatus {
+
   def fromString(value: String): Option[TokenBindingStatus] =
     value match {
       case "present"   => Some(Present)
       case "supported" => Some(Supported)
       case _           => Option.empty
     }
+
 }
 
 // ---------------------------------------------------------------------------
@@ -384,6 +429,7 @@ final case class PublicKeyCredentialParameters(
 )
 
 object PublicKeyCredentialParameters {
+
   val recommended: Vector[PublicKeyCredentialParameters] =
     Vector(
       PublicKeyCredentialParameters(
@@ -399,6 +445,7 @@ object PublicKeyCredentialParameters {
         alg = CoseAlgorithmIdentifier.RS256
       )
     )
+
 }
 
 final case class PublicKeyCredentialDescriptor(
@@ -415,6 +462,7 @@ final case class AuthenticatorSelectionCriteria(
 )
 
 object AuthenticatorSelectionCriteria {
+
   val passkeyPreferred: AuthenticatorSelectionCriteria =
     AuthenticatorSelectionCriteria(
       authenticatorAttachment = None,
@@ -430,6 +478,7 @@ object AuthenticatorSelectionCriteria {
       requireResidentKey = true,
       userVerification = UserVerificationRequirement.Required
     )
+
 }
 
 final case class PublicKeyCredentialCreationOptions(
@@ -471,7 +520,7 @@ final case class CollectedClientData(
     challenge: Base64UrlNoPadding,
     origin: Origin,
     crossOrigin: Option[Boolean],
-    topOrigin: Option[Origin], // WebAuthn L3 extension
+    topOrigin: Option[Origin],         // WebAuthn L3 extension
     tokenBinding: Option[TokenBinding] // WebAuthn L1 legacy; removed in L2
 )
 
@@ -480,10 +529,11 @@ final case class TokenBinding(
     id: Option[NonBlankText]
 )
 
-/** Raw PublicKeyCredential object received during registration.
+/**
+  * Raw PublicKeyCredential object received during registration.
   *
-  * The values here are still raw client output. Verification must parse
-  * clientDataJSON, attestationObject, authenticatorData, and the public key.
+  * The values here are still raw client output. Verification must parse clientDataJSON,
+  * attestationObject, authenticatorData, and the public key.
   */
 final case class RegistrationCredentialResponse(
     id: NonEmptyBase64UrlNoPadding,
@@ -503,7 +553,8 @@ final case class AuthenticatorAttestationResponse(
     publicKeyAlgorithm: Option[CoseAlgorithmIdentifier]
 )
 
-/** Raw PublicKeyCredential object received during authentication.
+/**
+  * Raw PublicKeyCredential object received during authentication.
   */
 final case class AuthenticationCredentialResponse(
     id: NonEmptyBase64UrlNoPadding,
@@ -541,6 +592,7 @@ final case class AuthenticatorDataFlags(
     attestedCredentialDataIncluded: Boolean,
     extensionDataIncluded: Boolean
 ) {
+
   def toByte: Byte =
     ((if (userPresent) AuthenticatorDataFlags.UP else 0)
       | (if (userVerified) AuthenticatorDataFlags.UV else 0)
@@ -548,6 +600,7 @@ final case class AuthenticatorDataFlags(
       | (if (backupState) AuthenticatorDataFlags.BS else 0)
       | (if (attestedCredentialDataIncluded) AuthenticatorDataFlags.AT else 0)
       | (if (extensionDataIncluded) AuthenticatorDataFlags.ED else 0)).toByte
+
 }
 
 object AuthenticatorDataFlags {
@@ -569,22 +622,28 @@ object AuthenticatorDataFlags {
       attestedCredentialDataIncluded = (flags & AT) != 0,
       extensionDataIncluded = (flags & ED) != 0
     )
+
 }
 
 final case class AttestedCredentialData(
     aaguid: Aaguid,
     credentialId: CredentialId,
-    /** The parsed COSE public key. */
+    /**
+      * The parsed COSE public key.
+      */
     credentialPublicKey: CoseKey,
-    /** The exact COSE-encoded bytes as they appeared in the authenticator data,
-      * retained verbatim for storage and signature re-verification.
+    /**
+      * The exact COSE-encoded bytes as they appeared in the authenticator data, retained verbatim
+      * for storage and signature re-verification.
       */
     credentialPublicKeyBytes: NonEmptyBytes
 )
 
 enum CredentialPublicKeyEncoding {
+
   case CoseKey
   case SubjectPublicKeyInfo
+
 }
 
 final case class CredentialPublicKey(
@@ -593,13 +652,14 @@ final case class CredentialPublicKey(
     bytes: NonEmptyBytes
 )
 
-/** A decoded attestationObject: { fmt, authData, attStmt }. The format lives on
-  * [[AttestationStatement.format]], which the verifier must confirm matches the
-  * `fmt` key read off the wire.
+/**
+  * A decoded attestationObject: { fmt, authData, attStmt }. The format lives on
+  * [[AttestationStatement.format]], which the verifier must confirm matches the `fmt` key read off
+  * the wire.
   *
-  * `rawAuthData` is the exact authData byte string from the CBOR map: every
-  * attestation signature (§8) is computed over `authData || clientDataHash`, so
-  * the verbatim bytes must be retained alongside the parsed view.
+  * `rawAuthData` is the exact authData byte string from the CBOR map: every attestation signature
+  * (§8) is computed over `authData || clientDataHash`, so the verbatim bytes must be retained
+  * alongside the parsed view.
   */
 final case class ParsedAttestationObject(
     authData: AuthenticatorData,
@@ -631,12 +691,14 @@ final case class CredentialRecord(
 )
 
 object CredentialRecord {
+
   def descriptor(record: CredentialRecord): PublicKeyCredentialDescriptor =
     PublicKeyCredentialDescriptor(
       credentialType = record.credentialType,
       id = record.credentialId,
       transports = record.transports
     )
+
 }
 
 // ---------------------------------------------------------------------------
@@ -647,8 +709,10 @@ type CeremonyId = CeremonyId.T
 object CeremonyId extends RefinedType[UUID, Pure]
 
 enum CeremonyKind {
+
   case Registration
   case Authentication
+
 }
 
 final case class RegistrationCeremony(
@@ -687,12 +751,14 @@ final case class VerifiedRegistration(
 )
 
 enum AttestationTrust {
+
   case None
   case Self
   case Basic
   case AttestationCa
   case AnonymizationCa
   case Uncertain
+
 }
 
 final case class VerifiedAttestation(
@@ -723,111 +789,142 @@ sealed trait WebAuthnError extends Product with Serializable {
 
 object WebAuthnError {
 
-  final case class InvalidBase64Url(value: String, reason: String)
-      extends WebAuthnError {
+  final case class InvalidBase64Url(value: String, reason: String) extends WebAuthnError {
+
     override val message: String =
       s"Invalid base64url value: $reason"
+
   }
 
   final case class InvalidClientData(reason: String) extends WebAuthnError {
+
     override val message: String =
       s"Invalid WebAuthn clientDataJSON: $reason"
+
   }
 
-  final case class InvalidAuthenticatorData(reason: String)
-      extends WebAuthnError {
+  final case class InvalidAuthenticatorData(reason: String) extends WebAuthnError {
+
     override val message: String =
       s"Invalid WebAuthn authenticatorData: $reason"
+
   }
 
   final case class InvalidAttestation(reason: String) extends WebAuthnError {
+
     override val message: String =
       s"Invalid WebAuthn attestation: $reason"
+
   }
 
   final case class InvalidAssertion(reason: String) extends WebAuthnError {
+
     override val message: String =
       s"Invalid WebAuthn assertion: $reason"
+
   }
 
-  final case class ChallengeMismatch(expected: ChallengeBytes)
-      extends WebAuthnError {
+  final case class ChallengeMismatch(expected: ChallengeBytes) extends WebAuthnError {
+
     override val message: String =
       "Returned WebAuthn challenge does not match the ceremony challenge"
+
   }
 
   final case class OriginNotAllowed(origin: Origin) extends WebAuthnError {
+
     override val message: String =
       s"Origin is not allowed for this relying party: $origin"
+
   }
 
-  final case class RelyingPartyIdMismatch(expected: RelyingPartyId)
-      extends WebAuthnError {
+  final case class RelyingPartyIdMismatch(expected: RelyingPartyId) extends WebAuthnError {
+
     override val message: String =
       s"Authenticator data does not match RP ID: $expected"
+
   }
 
-  final case class CredentialAlreadyRegistered(id: CredentialId)
-      extends WebAuthnError {
+  final case class CredentialAlreadyRegistered(id: CredentialId) extends WebAuthnError {
+
     override val message: String =
       "Credential is already registered"
+
   }
 
   final case class CredentialNotFound(id: CredentialId) extends WebAuthnError {
+
     override val message: String =
       "Credential was not found"
+
   }
 
   final case class CeremonyNotFound(id: CeremonyId) extends WebAuthnError {
+
     override val message: String =
       "WebAuthn ceremony was not found"
+
   }
 
   final case class CeremonyExpired(id: CeremonyId) extends WebAuthnError {
+
     override val message: String =
       "WebAuthn ceremony has expired"
+
   }
 
-  final case class CredentialTypeMismatch(received: String)
-      extends WebAuthnError {
+  final case class CredentialTypeMismatch(received: String) extends WebAuthnError {
+
     override val message: String =
       s"""Credential type must be "public-key", got: $received"""
+
   }
 
   case object UserPresenceRequired extends WebAuthnError {
+
     override val message: String =
       "The UP (user present) flag was not set in authenticator data"
+
   }
 
   case object UserVerificationRequired extends WebAuthnError {
+
     override val message: String =
       "User verification was required but the UV flag was not set"
+
   }
 
-  final case class UserHandleMismatch(expected: UserHandle)
-      extends WebAuthnError {
+  final case class UserHandleMismatch(expected: UserHandle) extends WebAuthnError {
+
     override val message: String =
       "Returned user handle does not identify the user who owns the credential"
+
   }
 
-  final case class UnsupportedAlgorithm(alg: CoseAlgorithmIdentifier)
-      extends WebAuthnError {
+  final case class UnsupportedAlgorithm(alg: CoseAlgorithmIdentifier) extends WebAuthnError {
+
     override val message: String =
       s"COSE algorithm is not supported: $alg"
+
   }
 
   case object InvalidSignature extends WebAuthnError {
+
     override val message: String =
       "WebAuthn signature verification failed"
+
   }
 
   final case class SignatureCounterRollback(
       stored: SignCount,
       received: SignCount
   ) extends WebAuthnError {
+
     override val message: String =
       "Received signature counter is lower than or equal to the stored counter"
+
   }
+
 }
 
 // ---------------------------------------------------------------------------
