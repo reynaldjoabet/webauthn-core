@@ -19,18 +19,18 @@ object Dependencies {
     val tapir  = "1.13.18"
 
     // --- JSON ---
-    val jsoniter = "2.39.1"
+    val jsoniter = "2.40.1"
     val circe    = "0.14.16"
 
     // --- FP ---
-    val catsEffect      = "3.7.0"
+    val catsEffect      = "3.7.1"
     val fs2             = "3.13.0"
     val fs2Kafka        = "4.0.0"
     val chimney         = "1.10.0"
     val iron            = "3.3.2"
     val hedgehog        = "0.13.0"
     val scalacheck      = "1.19.0"
-    val munit           = "1.3.4"
+    val munit           = "1.3.5"
     val munitCatsEffect = "2.2.0"
 
     // --- DB ---
@@ -43,7 +43,8 @@ object Dependencies {
 
     // --- Security ---
     val jwtScala         = "11.0.4"
-    val bouncycastle     = "1.85"
+    val bouncycastle     = "1.85"   // bcpkix/bcutil: no patch respins
+    val bouncycastleProv = "1.85.2" // bcprov gets its own patch respins
     val password4j       = "1.8.4"
     val auth0            = "4.5.2"
     val nimbusJoseJwt    = "10.9.1"
@@ -221,7 +222,7 @@ object Dependencies {
     "org.bouncycastle" % "bcpkix-jdk18on" % Version.bouncycastle
 
   lazy val bouncycastleProvider =
-    "org.bouncycastle" % "bcprov-jdk18on" % Version.bouncycastle
+    "org.bouncycastle" % "bcprov-jdk18on" % Version.bouncycastleProv
 
   lazy val pemKeystore =
     "de.dentrassi.crypto" % "pem-keystore" % "3.0.0"
