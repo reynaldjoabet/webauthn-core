@@ -119,7 +119,7 @@ enum CoseAlgorithm derives CanEqual {
 object CoseAlgorithm {
 
   def fromIdentifier(id: CoseAlgorithmIdentifier): Option[CoseAlgorithm] =
-    values.find(_.identifier == id)
+    values.find(_.identifier.value == id.value)
 
 }
 
