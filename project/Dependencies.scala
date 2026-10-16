@@ -43,8 +43,8 @@ object Dependencies {
 
     // --- Security ---
     val jwtScala         = "11.0.4"
-    val bouncycastle     = "1.85"   // bcpkix/bcutil: no patch respins
-    val bouncycastleProv = "1.85.2" // bcprov gets its own patch respins
+    val bouncycastle     = "1.85"
+    val bouncycastleProv = "1.85.2"
     val password4j       = "1.8.4"
     val auth0            = "4.5.2"
     val nimbusJoseJwt    = "10.9.1"
@@ -276,6 +276,7 @@ object Dependencies {
 
     }
 
+    // bcpkix/bcutil get no patch respins; bcprov does, so it has its own version.
     object bouncycastle {
 
       val pkix     = "org.bouncycastle" % "bcpkix-jdk18on" % Versions.bouncycastle
