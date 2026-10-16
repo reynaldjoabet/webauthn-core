@@ -1,4 +1,4 @@
-import Dependencies._
+import Dependencies as deps
 
 ThisBuild / scalaVersion      := "3.9.0"
 ThisBuild / version           := "0.1.0-SNAPSHOT"
@@ -25,16 +25,14 @@ lazy val root = (project in file("."))
   .settings(
     name                 := "webauthn-core",
     libraryDependencies ++= Seq(
-      iron,
-      ironJsoniter,
-      jsoniter,
-      jsoniterMacros,
-      bouncycastle,
-      bouncycastleProvider,
-      munit,
-      scalacheck,
-      circeCore,
-      "com.yubico" % "webauthn-server-core"        % "2.9.0",
-      "com.yubico" % "webauthn-server-attestation" % "2.9.0"
-    )
+      deps.domain.iron.core,
+      deps.domain.iron.jsoniter,
+      deps.json.circe.core,
+      deps.security.bouncycastle.pkix,
+      deps.security.bouncycastle.provider,
+      deps.security.webauthn.server,
+      deps.security.webauthn.attestation,
+      deps.testing.munit,
+      deps.testing.scalacheck
+    ) ++ deps.json.jsoniter.core
   )
