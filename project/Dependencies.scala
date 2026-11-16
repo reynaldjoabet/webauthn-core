@@ -11,7 +11,7 @@ object Dependencies {
     val zioLogging = "2.5.3"
     val zioConfig  = "4.0.7"
     val zioSchema  = "1.8.5"
-    val zioKafka   = "3.8.1"
+    val zioKafka   = "4.0.0"
 
     // --- HTTP ---
     val http4s = "0.23.34"
@@ -38,13 +38,13 @@ object Dependencies {
     val magnum   = "2.0.0-M3"
     val skunk    = "2.0.0-RC3"
     val hikaricp = "7.1.0"
-    val flyway   = "13.12.1"
+    val flyway   = "13.12.2"
     val postgres = "42.7.14"
 
     // --- Security ---
     val jwtScala         = "11.0.4"
-    val bouncycastle     = "1.86"
-    val bouncycastleProv = "1.86"
+    val bouncycastle     = "1.87"
+    val bouncycastleProv = "1.87"
     val password4j       = "1.8.4"
     val auth0            = "4.6.2"
     val nimbusJoseJwt    = "10.10"
